@@ -100,7 +100,7 @@ def critic_node(state: AgentState) -> dict[str, any]:
     draft = state.get("final_answer", "")
     
     # Rough estimate: 500 words ≈ 2500 characters (assuming 5 chars per word)
-    min_words = 1500
+    min_words = 500
     min_chars = min_words * 5
     
     if len(draft) < min_chars:
