@@ -11,10 +11,10 @@ api = load_dotenv()
 #print(os.getenv("LLM_BACKEND"),"OLLAMA API Key")
 
 
-llm_backend = os.getenv("LLM_BACKEND","gemini")
-print("llm backend : ",llm_backend)
+llm_model = os.getenv("LLM_BACKEND","gemini")
+print("llm backend : ",llm_model)
 
-if llm_backend == "ollama":
+if llm_model == "ollama":
     ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     model_name = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
     llm = ChatOllama(model=model_name, base_url=ollama_base_url, temperature=0.7)
