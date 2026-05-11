@@ -1,123 +1,174 @@
-## LangChain Research Agent with Critic Loop
+# 🔍 LangChain Research Agent – Gemini & Ollama
 
-Multi-agent research system using LangChain, LangGraph, Streamlit.
-Performs web search (Serper API), generates >=500 word summary,
-and uses a critic loop for self-improvement.
-Supports Gemini (cloud) and Ollama (self-hosted).
+**LangChain Research Agent** is a Streamlit‑based web application that researches any topic you ask. It uses a **LangGraph** workflow (researcher → writer → critic) to search the web via Serper API and produce a detailed, well‑structured summary (≥500 words). The agent can run on two different LLM backends:
 
-**Features:**
-- Web search (20 results via Serper API)
-- LangGraph workflow: researcher -> writer -> critic loop
-- Length-based critic (expands drafts under ~500 words)
-- Self-improvement: writer incorporates feedback
-- Dual backend (Gemini/Ollama via one environment variable)
-- Ready for Railway (Docker, persistent volume for Ollama)
+- **Google Gemini** (cloud, via OpenAI‑compatible endpoint) – fast, high‑quality.
+- **Ollama** (self‑hosted, with e.g. Qwen2.5 3B) – private, no API costs.
 
-**Critic Loop Diagram:**
+👉 **Live demo (Gemini):** [https://your-gemini-service.up.railway.app](https://your-gemini-service.up.railway.app)  
+👉 **Live demo (Ollama):** [https://your-ollama-service.up.railway.app](https://your-ollama-service.up.railway.app)  
+*(Replace with your actual Railway URLs)*
 
-Start -> Researcher -> Writer -> Critic -> Length >=500 words?
-If No: generate feedback -> loop back to Writer
-If Yes: End -> return final answer
+---
 
-Tech Stack:
-- LangChain + LangGraph
-- Streamlit (UI)
-- Serper API (search)
-- Gemini API / Ollama (LLMs)
-- Docker + Railway
+## ✨ Features
 
-Project Structure:
-langchain-research-agent/
-  app.py
-  graph.py
-  chat_models.py
-  tools.py
-  requirements.txt
-  Dockerfile
-  .env.example
-  README.md
+- Natural language input – just type a topic  
+- Web search via **Serper API** (Google Search)  
+- **LangGraph** workflow:  
+  - `researcher` – searches the web  
+  - `writer` – writes a detailed summary  
+  - `critic` – checks length and requests improvements (loop until ≥500 words)  
+- **Backend switching** – choose Gemini or Ollama via a single environment variable  
+- Dockerised – runs anywhere  
+- Deployed on **Railway** (Git‑based CI/CD)
 
-Local Setup:
+---
 
-1. Clone the repository:
-   git clone https://github.com/yourusername/langchain-research-agent.git
+## 🛠️ Tech Stack
+
+| Layer              | Technology                                                                 |
+|--------------------|----------------------------------------------------------------------------|
+| Frontend           | [Streamlit](https://streamlit.io)                                          |
+| Agent Workflow     | [LangGraph](https://www.langchain.com/langgraph) + [LangChain](https://www.langchain.com) |
+| LLM (cloud)        | [Google Gemini](https://ai.google.dev/gemini-api) via OpenAI‑compatible endpoint |
+| LLM (self‑hosted)  | [Ollama](https://ollama.com) with [Qwen2.5 3B](https://ollama.com/library/qwen2.5:3b) |
+| Web Search         | [Serper API](https://serper.dev)                                           |
+| Container          | Docker                                                                     |
+| Deployment         | [Railway](https://railway.app)                                             |
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+**Prerequisites**
+
+- Python 3.9+
+- Docker (optional, but recommended)
+- API keys: [Gemini](https://aistudio.google.com/app/apikey) (if using Gemini) + [Serper](https://serper.dev)
+- For Ollama backend: [Install Ollama](https://ollama.com/download) and pull a model (e.g. `ollama pull qwen2.5:3b`)
+
+1. **Clone the repository**
+
+   ```
+   git clone https://github.com/YOUR_USERNAME/langchain-research-agent.git
    cd langchain-research-agent
+   ```
 
-2. Create virtual environment:
-   python -m venv venv
-   source venv/bin/activate (Linux/Mac) or .\venv\Scripts\activate (Windows)
+2.  **Set up environment variables**
 
-3. Install dependencies:
+      Create a `.env` file in the project root.
+
+      **Option 1: Use Gemini (default backend)**
+      ```
+      GEMINI_API_KEY=your_gemini_key_here
+      SERPER_API_KEY=your_serper_key_here
+      # LLM_BACKEND defaults to 'gemini', so no need to set it
+      ```      
+
+      **Option 2: Use Ollama(self-hosted)**
+      
+      ```
+      LLM_BACKEND=ollama
+      OLLAMA_BASE_URL=http://localhost:11434
+      OLLAMA_MODEL=qwen2.5:3b
+      SERPER_API_KEY=your_serper_key_here
+
+      ⚠️ Never commit .env – it's already ignored via .gitignore.
+      ```
+
+3. Run without Docker
+
+   ```
    pip install -r requirements.txt
-
-4. Copy environment file:
-   cp .env.example .env
-
-5. Edit .env with your keys (see below)
-
-6. Run the app:
    streamlit run app.py
+   http://localhost:8501
 
-Environment Variables (.env):
+4. Run with Docker (test the container)
+      ```
+      docker build -t langchain-research-agent .
+      docker run -p 7860:7860 langchain-research-agent
 
-LLM_BACKEND=gemini (or ollama)
-GEMINI_API_KEY=your_google_key
-SERPER_API_KEY=your_serper_key
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen2.5:3b
+## Switching Between Gemini and Ollama Backends
 
-Docker (Local):
+The agent reads the `LLM_BACKEND` environment variable to decide which LLM to use. The same codebase works for both.
 
-docker build -t langchain-research-agent .
-docker run -p 7860:7860 --env-file .env langchain-research-agent
+| Backend          | Environment variables                                                                 |
+|------------------|----------------------------------------------------------------------------------------|
+| **Gemini** (default) | `LLM_BACKEND=gemini` (or not set) + `GEMINI_API_KEY`                                 |
+| **Ollama** (local)   | `LLM_BACKEND=ollama` + `OLLAMA_BASE_URL` (default `http://localhost:11434`) + `OLLAMA_MODEL` |
+   
+                       
+## On Railway
 
-Deploy on Railway:
+- **For the Gemini service:** add `LLM_BACKEND=gemini` (or omit) and `GEMINI_API_KEY`.
 
-Option A: Deploy from GitHub
-- Push code to GitHub
-- On Railway: New Project -> Deploy from GitHub repo
-- Add environment variables
+- **For the Ollama service:** add `LLM_BACKEND=ollama` and `OLLAMA_BASE_URL=http://ollama.railway.internal:11434` (the internal hostname of your Ollama service). Also set `OLLAMA_MODEL` if different from default.
 
-Option B: Deploy from Docker image
-- docker build -t yourdockerhub/langchain-research-agent .
-- docker push yourdockerhub/langchain-research-agent
-- On Railway: New Project -> Deploy from Docker Image
+- **All other settings** (search tool, graph nodes) remain identical.
 
-Required environment variables on Railway:
-- LLM_BACKEND (gemini or ollama)
-- GEMINI_API_KEY (if using Gemini)
-- SERPER_API_KEY
-- OLLAMA_BASE_URL (if using Ollama, e.g., http://ollama.railway.internal:11434)
-- OLLAMA_MODEL (e.g., qwen2.5:3b)
+## 📦  Deployment on Railway (Git‑based)
 
-For Ollama on Railway:
-- Create a separate Ollama service with persistent volume (5GB hobby limit)
-- Set OLLAMA_BASE_URL in the research agent service to point to the Ollama service
+1. Push your code to a GitHub repository.
+2. On [Railway.app](https://railway.app), create a new project → **Deploy from GitHub repo**.
+3. Select your repository. Railway automatically detects the `Dockerfile`.
+4. Add environment variables:
+   - `SERPER_API_KEY`
+   - and either:
+     - `GEMINI_API_KEY`  
+       or
+     - `LLM_BACKEND=ollama` + `OLLAMA_BASE_URL`
+5. Railway assigns a public URL. Every `git push` triggers an automatic redeploy.
 
-Switching Backends:
-Simply change LLM_BACKEND environment variable to 'gemini' or 'ollama'. No code changes needed.
+## Running Ollama on Railway
 
-Example:
-User input: "Latest advances in quantum computing 2025"
-Output: A well-structured research summary of 500+ words with recent breakthroughs,
-key players, challenges, and future outlook.
+To run Ollama on Railway, you need a **separate Ollama service** (with a persistent volume of ≥5 GB). The agent service can then connect to it using the internal hostname:
+http://ollama.railway.internal:11434
 
-If first draft is too short, critic sends feedback like:
-"The draft is too short (about 320 words). Please expand with more details on..."
-Writer then improves the draft in the next iteration.
+## 🧠 How It Works (LangGraph Flow)
 
-Logging & Debugging:
-- Logs go to stdout (print statements and Python logging)
-- On Railway: use 'railway logs' (CLI) or Dashboard -> Observability -> Logs
+The agent uses a **stateful graph** (LangGraph) with four nodes and a conditional loop:
 
-Future Improvements (Roadmap):
-- Integrate existing RAG project as a new node
-- Add LLM-based critic (quality evaluation beyond length)
-- Support more search APIs (Tavily, Bing)
-- Streaming RAG with real-time data ingestion
-- Add scikit-learn classifier as a tool for predictions
+- **Researcher node** – calls `web_search` (Serper) and appends results to `research_notes`.
+- **Writer node** – generates an initial draft (or improves an existing one if feedback is present).
+- **Critic node** – checks the draft length. If below threshold (e.g., <500 words), it sets `needs_improvement = True` and provides feedback.
+- **Conditional edge** – if `needs_improvement` is `True`, the graph loops back to the writer node; otherwise it ends.
 
-License: MIT
+### State Dictionary
 
-Acknowledgements:
-LangChain, LangGraph, Serper.dev, Ollama, Railway
+The state tracks the following fields:
+
+```
+{
+    "topic": str,                # user query, never changes
+    "research_notes": list,      # accumulates search results (with operator.add reducer)
+    "draft": str,                # current version of the summary
+    "feedback": str,             # critic’s suggestions for improvement
+    "needs_improvement": bool,   # loop control flag
+    "final_answer": str          # final approved summary (returned to the user)
+}
+```
+
+## 📁 Project Structure
+
+```text
+langchain-research-agent/
+├── app.py               # Streamlit frontend
+├── graph.py             # LangGraph workflow (researcher, writer, critic)
+├── chat_models.py       # LLM factory (Gemini or Ollama)
+├── tools.py             # Serper search tool
+├── requirements.txt     # Python dependencies
+├── Dockerfile           # Container definition
+├── .env                 # API keys (not committed)
+├── .gitignore           # Ignores .env, __pycache__, etc.
+└── README.md            # This file
+```
+
+## 🙏 Acknowledgements
+
+- **LangChain & LangGraph** – graph‑based agent framework
+- **Google Gemini API** – cloud LLM
+- **Ollama** – local LLM runner
+- **Qwen2.5** – open‑source model
+- **Serper API** – Google Search API
+- **Railway** – cloud deployment platform
