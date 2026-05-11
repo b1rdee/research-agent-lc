@@ -5,9 +5,9 @@
 - **Google Gemini** (cloud, via OpenAI‑compatible endpoint) – fast, high‑quality.
 - **Ollama** (self‑hosted, with e.g. Qwen2.5 3B) – private, no API costs.
 
-👉 **Live demo (Gemini):** [https://your-gemini-service.up.railway.app](https://your-gemini-service.up.railway.app)  
-👉 **Live demo (Ollama):** [https://your-ollama-service.up.railway.app](https://your-ollama-service.up.railway.app)  
-*(Replace with your actual Railway URLs)*
+👉 **Live demo (Gemini):** https://ra-lc-gem-gh.up.railway.app  
+👉 **Live demo (Ollama):** https://ra-lc-ollama-gh.up.railway.app  
+
 
 ---
 
@@ -89,6 +89,8 @@
       docker build -t langchain-research-agent .
       docker run -p 7860:7860 langchain-research-agent
 
+----
+
 ## Switching Between Gemini and Ollama Backends
 
 The agent reads the `LLM_BACKEND` environment variable to decide which LLM to use. The same codebase works for both.
@@ -107,6 +109,8 @@ The agent reads the `LLM_BACKEND` environment variable to decide which LLM to us
 
 - **All other settings** (search tool, graph nodes) remain identical.
 
+----
+
 ## 📦  Deployment on Railway (Git‑based)
 
 1. Push your code to a GitHub repository.
@@ -124,6 +128,8 @@ The agent reads the `LLM_BACKEND` environment variable to decide which LLM to us
 
 To run Ollama on Railway, you need a **separate Ollama service** (with a persistent volume of ≥5 GB). The agent service can then connect to it using the internal hostname:
 http://ollama.railway.internal:11434
+
+----
 
 ## 🧠 How It Works (LangGraph Flow)
 
@@ -148,6 +154,7 @@ The state tracks the following fields:
     "final_answer": str          # final approved summary (returned to the user)
 }
 ```
+----
 
 ## 📁 Project Structure
 
@@ -163,6 +170,8 @@ langchain-research-agent/
 ├── .gitignore           # Ignores .env, __pycache__, etc.
 └── README.md            # This file
 ```
+
+----
 
 ## 🙏 Acknowledgements
 
